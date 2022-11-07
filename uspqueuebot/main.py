@@ -1,9 +1,11 @@
 import logging
+from datetime import datetime
+import pytz
 
 from uspqueuebot.constants import (HELP_MESSAGE, INVALID_COMMAND_MESSAGE,
-                                   INVALID_FORMAT_MESSAGE, NO_COMMAND_MESSAGE,
+                                   INVALID_FORMAT_MESSAGE, NO_COMMAND_MESSAGE, QUEUE_CLOSED_MESSAGE, QUEUE_UNOPENED_MESSAGE,
                                    START_MESSAGE, UNDER_MAINTENANCE_MESSAGE)
-from uspqueuebot.credentials import ADMIN_CHAT_ID, ADMINS
+from uspqueuebot.credentials import ADMIN_CHAT_ID, ADMINS, CHECK_TIME, END_TIME, START_TIME
 from uspqueuebot.logic import (broadcast_command, bump_command, howlong_command, join_command,
                                leave_command, next_command, purge_command, viewqueue_command)
 from uspqueuebot.utilities import (extract_user_details, get_message_type,
@@ -73,24 +75,6 @@ def main(bot, body):
 
     queue = get_queue()
 
-    # join command
-    if text == "/join":
-        join_command(bot, queue, chat_id, username)
-        logger.info("Join command detected and processed.")
-        return
-
-    # leave command
-    if text == "/leave":
-        leave_command(bot, queue, chat_id)
-        logger.info("Leave command detected and processed.")
-        return
-
-    # howlong command
-    if text == "/howlong":
-        howlong_command(bot, queue, chat_id)
-        logger.info("Howlong command detected and processed.")
-        return
-
     # admin commands
     if chat_id in ADMINS.values():
         # viewqueue command
@@ -98,7 +82,7 @@ def main(bot, body):
             viewqueue_command(bot, queue, chat_id)
             logger.info("Admin viewqueue command detected and processed.")
             return
-        
+
         # next command
         if text == "/next":
             next_command(bot, queue, chat_id)
@@ -121,7 +105,43 @@ def main(bot, body):
             logger.info("Broadcast command detected and processed.")
             return
 
-        # intentionally no return here
+        # intentionally no return here because admins can send non-admin commands
+
+    # howlong command
+    if text == "/howlong":
+        howlong_command(bot, queue, chat_id)
+        logger.info("Howlong command detected and processed.")
+        return
+    
+    # check if the queue has opened
+    if CHECK_TIME:
+        singpore_timezone = pytz.timezone("Asia/Singapore")
+        time_now = datetime.now().astimezone()
+        
+        time_start = singpore_timezone.localize(datetime(*START_TIME))
+        if time_now < time_start:
+            time_start_string = time_start.strftime("%-I:%M %p, %A %d %B.")
+            bot.send_message(chat_id=chat_id, text=QUEUE_UNOPENED_MESSAGE+time_start_string)
+            return
+        
+        time_end = singpore_timezone.localize(datetime(*END_TIME))
+        if time_now > time_end:
+            time_end_string = time_start.strftime("%-I:%M %p, %A %d %B.")
+            bot.send_message(
+                chat_id=chat_id, text=QUEUE_CLOSED_MESSAGE+time_end_string)
+            return
+
+    # join command
+    if text == "/join":
+        join_command(bot, queue, chat_id, username)
+        logger.info("Join command detected and processed.")
+        return
+
+    # leave command
+    if text == "/leave":
+        leave_command(bot, queue, chat_id)
+        logger.info("Leave command detected and processed.")
+        return
 
     ## invalid command
     bot.send_message(chat_id=chat_id, text=INVALID_COMMAND_MESSAGE)

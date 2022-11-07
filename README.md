@@ -11,6 +11,7 @@ Users can join and leave the queue, while also keeping track of the queue length
 Admins can also manage the queue by removing or bumping the first user in the queue.
 The first few users in the queue would also be automatically informed as it is nearing their turn.
 Responses from the bot are also in Singlish to keep the vibe fun and local.
+Additionally, queue start and end timings can be added to signal the opening and closing of the queue. Users will only be unable to join and leave the queue before the start time, and after the end time. All other commands will still work.
 
 ## General Commands
 
