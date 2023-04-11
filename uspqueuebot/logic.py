@@ -75,7 +75,7 @@ def viewqueue_command(bot, queue, chat_id):
         username = entry[2]
         message += "\n"
         message += str(count)
-        message += ". "
+        message += ". @"
         message += username
         count += 1
     bot.send_message(chat_id=chat_id, text=message)
