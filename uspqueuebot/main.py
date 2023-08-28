@@ -30,8 +30,7 @@ def main(bot, body):
 
     # manage updates (https://core.telegram.org/bots/api#getting-updates)
     if "update_id" in body.keys() and len(body.keys()) == 1:
-        logger.info("An update_id message has been sent by Telegram.")
-        logger.error('Event: {}'.format(body))
+        logger.info("An update_id message has been sent by Telegram.\n" + 'Event: {}'.format(body))
         return
     
     # obtain key message details
@@ -126,7 +125,7 @@ def main(bot, body):
         
         time_end = singpore_timezone.localize(datetime(*END_TIME))
         if time_now > time_end:
-            time_end_string = time_start.strftime("%-I:%M %p, %A %d %B.")
+            time_end_string = time_end.strftime("%-I:%M %p, %A %d %B.")
             bot.send_message(
                 chat_id=chat_id, text=QUEUE_CLOSED_MESSAGE+time_end_string)
             return

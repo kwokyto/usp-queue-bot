@@ -161,3 +161,13 @@ def broadcast_command(bot, queue, chat_id, message):
         user_chat_id = get_first_chat_id(queue)
     bot.send_message(chat_id=chat_id, text=BROADCAST_SUCCESSFUL_MESSAGE)
     return
+
+def bot_send_message(bot, chat_id, text):
+    try:
+        bot.send_message(chat_id=chat_id, text=text)
+    except Exception as error:
+        if "Forbidden: bot was blocked by the user" in error.__str__():
+            logger.error("User with chat ID " + str(chat_id) + " blocked the bot.")
+        else:
+            raise error
+    return
